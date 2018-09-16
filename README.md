@@ -31,3 +31,12 @@
 ## Automation for developers
 
 * now when your changed are ready for production run this playbook to update production (but first update with yor repo sttings)
+
+## Reflections and things to do 
+I'm actually not completely happy with this solution
+Due to the fact that it took me forever to find out that nodejs 8 caused errors with ghost and i didn't had the time to fully automate the ghost installation.(no solution on galaxy that could be used)
+But the crontab is actually nice though :)
+to improve this, i Would fully automate the install and use roles, to make a better overview
+anyhow I'm not yet a master in Ansible, but give me a Python challenge :)
+
+Best regards Bo Jensen
