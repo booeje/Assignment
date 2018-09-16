@@ -1,5 +1,5 @@
 # Assignment
-##Installing Ghost and do the admin stuff
+## Installing Ghost and do the admin stuff
 
 * add your public key to node to acces without password
 
@@ -28,6 +28,6 @@
   this will backup /var/www/ghost and the MysqlDb to the backupfolder and send a mail with status
   (Remember to setup postfix and mailutils)
 
-##Automation for developers
+## Automation for developers
 
 * now when your changed are ready for production run this playbook to update production (but first update with yor repo sttings)
