@@ -1,0 +1,8 @@
+#!/bin/bash
+backup_status="Backup of /var/www/ghost not completed"
+sql_status="Backup of sql server not completed"
+systemctl stop ghost_localhost.service
+tar -zcvf "/backup/ghost_$(date '+%Y-%m-%d').tar.gz" /var/www/ghost >/dev/null 2>&1 && backup_status="Backup of /var/www/ghost completed"
+systemctl start ghost_localhost.service
+mysqldump -u ghostuser --password="ghostdb" --databases ghost --single-transaction --quick --lock-tables=false > /backup/ghost-backup-$(date +%F).sql 2>/dev/null  && sql_status="Backup of sql server completed" 
+echo -e $backup_status "\n" $sql_status |  mail -s "$(date '+%Y-%m-%d') Daily statust of GhostServer" admin@EvilCorp.hell

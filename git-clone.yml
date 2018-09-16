@@ -1,0 +1,33 @@
+---
+ - name: Install ghost
+   hosts: all
+   become: true
+
+   tasks:
+           
+   - name: stop Ghost
+     sudo: yes
+     command: systemctl stop ghost_ghost-local.service
+   
+   - name: remove ghost folder
+     shell: /bin/rm -rf /var/www/ghost
+   
+   - name: create folder /var/www/ghost
+     file:
+      path: /var/www/ghost
+      state: directory
+      owner: ghostrider
+      group: ghostrider
+      mode: 0755
+
+   - name: Clone the /var/www/ghost folder
+     git:
+      repo: https://github.com/xxxxxx/xxxxxxxx.git
+      dest: /var/www/ghost
+      update: yes
+      version: master
+
+   - name: start Ghost
+     sudo: yes
+     command: systemctl start ghost_ghost-local.service
+

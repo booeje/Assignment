@@ -1,0 +1,131 @@
+---
+- name: Install ghost 
+  hosts: all
+  become: true
+
+  gather_facts: False
+  pre_tasks:
+  - name: Install python for Ansible
+    raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+    changed_when: False
+  - setup: # aka gather_facts
+  
+  tasks:
+  - name: Update-Upgrade ghost box
+    apt:
+      upgrade: dist 
+      update_cache: yes
+      cache_valid_time: 86400
+
+  - name: Create ghostrider user
+    user:
+      name: ghostrider
+      state: present
+      password: $6$pa.n.6kNg60VYcy$ojtGKOKfV8fTAKWPJKYVumEzE5Rh8Q6Sra4V9YhVhK0Sb6lBSKlKSpnHR3ym8n2GK.GV8iO3cGGTtY9qbeL/U/
+      shell: /bin/bash      
+      system: no            
+      createhome: yes       
+      home: /home/ghostrider
+      groups: "sudo"
+
+  - name: Create ghostrider SSH key 
+    user:
+     name: ghostrider
+     generate_ssh_key: yes
+     ssh_key_bits: 2048
+     ssh_key_file: .ssh/id_rsa
+ 
+  - name: install Nginx
+    apt: name=nginx state=latest
+  
+  - name: start nginx
+    service:
+      name: nginx
+      state: started
+
+  - name: install ufw
+    apt: name=ufw state=latest
+   
+  - name: Allow all access to tcp port 80
+    ufw:
+      rule: allow
+      port: 80
+      proto: tcp
+  
+  - name: Allow SSH
+    ufw:
+      rule: allow
+      name: OpenSSH
+  
+  - name: ebnable  
+    ufw:
+      state: enabled
+
+  - name: Install MySQL
+    apt: name={{ item }}  state=present
+    with_items:
+    - python-mysqldb
+    - mysql-server
+
+  - name: update root dbpassword
+    mysql_user: 
+       name: root host={{ item }}
+       password: "root"
+       state: present
+       check_implicit_admin: yes
+       priv: "*.*:ALL,GRANT"
+    with_items:
+     - 127.0.0.1
+     - ::1
+     - localhost
+ 
+  - name: Create a new ghost  database
+    mysql_db: name=ghost state=present collation=utf8_general_ci
+ 
+  - name: Create a ghost database user
+    mysql_user: name="ghostuser" password="ghostdb" priv=*.*:ALL host=localhost
+
+  - name: restart the MySQL service
+    service: 
+      name: mysql 
+      state: restarted
+      enabled: true 
+ 
+  - name: Download NodeJs 6
+    shell: curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
+    ignore_errors: True
+ 
+  - name: install node
+    apt: name=nodejs
+
+  - name: Install Ghost CLI
+    npm:
+      name: ghost-cli
+      global: yes
+      state: present
+
+  - name: create folder /var/www/ghost
+    file:
+     path: /var/www/ghost
+     state: directory
+     owner: ghostrider
+     group: ghostrider
+     mode: 0755
+  
+  - name: create backupfolder
+    file:
+     path: /backup
+     state: directory
+     owner: root
+     group: root
+     mode: 0666
+
+    #- name: Run Ghost install
+     #become: true
+     #become_user: ghostrider
+     #shell: cd /var/www/ghost && ghost install --local
+     #args:
+     #chdir: /var/www/ghost/
+     #creates: config.production.json
+     #ignore_errors: True
+
